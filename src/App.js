@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 
+import Component from "./component";
+
 // SEE README FOR INSTRUCTIONS
 
 function App() {
@@ -10,7 +12,14 @@ function App() {
     fetch(
       "https://cors-anywhere.herokuapp.com/https://fetch-hiring.s3.amazonaws.com/hiring.json"
     )
-      .then((res) => res.json())
+      // I just wanted to make this slightly more explicit
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("hey");
+        }
+
+        return res.json();
+      })
       .then((data) => {
         const objOfDataArrs = {};
         data.forEach((datum) => {
@@ -27,7 +36,7 @@ function App() {
         updateStateObjOfListIds(objOfDataArrs);
       })
       // if it has an error, update state to inform the user
-      .catch(() => {
+      .catch((err) => {
         updateErrors(
           "We could not find the resource. Please refresh or check back later"
         );
@@ -48,12 +57,12 @@ function App() {
 
   // guard clause for errors
   if (errors) {
-    return errors;
+    return <Component text={errors} />;
   }
 
   // guard clause for first render or potential error
   if (!stateObjOfListIds) {
-    return "Please wait while we grab the items";
+    return <Component text="Please wait while we grab the items" />;
   }
 
   // first sort list Ids. Prettier won't make this one line
@@ -68,7 +77,7 @@ function App() {
     return (
       // key for improving React Fiber and the diffing algo of the Virtual DOM
       <div key={num}>
-        <h1> List Id {parseInt(num)}</h1>
+        <h2> List Id {parseInt(num)}</h2>
         <table>
           <thead>
             <tr>
@@ -87,12 +96,7 @@ function App() {
     );
   });
 
-  return (
-    <div className="App">
-      <h1>Hello Fetch Rewards</h1>
-      {stylizedArrToTable}
-    </div>
-  );
+  return <Component text={stylizedArrToTable} />;
 }
 
 export default App;
